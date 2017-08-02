@@ -17,6 +17,7 @@ struct threadDataStruct
     public bool setDone;
     public object mutex;
     public DataSaver saver;
+    public EmotionClassifier emotion;
     public bool newData;
 }
 
@@ -47,6 +48,7 @@ public class NetworkRetriever : MonoBehaviour
         threadData.mutex = this.mutex;
         threadData.newData = false;
         threadData.saver = new DataSaver();
+        threadData.emotion = new EmotionClassifier();
         serverThread = new Thread(lambdaFunc => threadWorker(ref threadData));
         serverThread.Start();
        //StartCoroutine("coroutineUpdateValues"); use instead of update block
@@ -71,7 +73,7 @@ public class NetworkRetriever : MonoBehaviour
             if (newData)
             {                
                     //  brModel.setActivityForNode(counter, value, rawArr[counter]);
-                    Debug.Log(arr[0][0] + " " + arr[0][1] + " " + arr[0][2]);
+                    //Debug.Log(threadData.emotion.fearLvl);
                 
             }
         }else
@@ -99,18 +101,14 @@ public class NetworkRetriever : MonoBehaviour
 
     private void threadWorker(ref threadDataStruct data)
     {
-        JsonBrainObject.createZeroValArr();
-        AsyncIO.ForceDotNet.Force();
-        NetMQConfig.ManualTerminationTakeOver();
-        NetMQConfig.ContextCreate(true);
-        NetMQ.Sockets.PullSocket server;
         string recString;
-        double counterRetrieval = 0;
-        float[] array = null;
+        JsonBrainObject.createZeroValArr();
         JsonBrainObject obj = null;
-        bool workDone = false;
-        float maxCalibrationValue = 0;
+
+        AsyncIO.ForceDotNet.Force();
+        NetMQ.Sockets.PullSocket server;
         System.TimeSpan timeOut = new System.TimeSpan(0, 0, 0, 0, 100);
+
         print(data.timeout);
         print(data);
         print(data.setDone);
@@ -119,6 +117,7 @@ public class NetworkRetriever : MonoBehaviour
             print("Pull socket is up and running");
             server.TryReceiveFrameString(timeOut, out recString);
 
+            bool workDone = false;
 
             // This pattern lets us interrupt the work at a safe point if neeeded.
             while (!workDone)
@@ -127,35 +126,10 @@ public class NetworkRetriever : MonoBehaviour
                 try
                 {
                     server.TryReceiveFrameString(timeOut, out recString);
-                }
-                catch
-                {
-                    obj = null;
-                    recString = null;
-                }
-                try
-                {
-                    if (recString != null)
-                    {
-                        //print("convert");
-                        obj = JsonConvert.DeserializeObject<JsonBrainObject>(recString);
-                        //print("convert done");
-                        //counterRetrieval += 1;
-                        //print(counterRetrieval);
-                    }
-                }
-                catch
-                {
-                    obj = null;
-                }
-                if (obj != null)
-                {
+                    obj = JsonConvert.DeserializeObject<JsonBrainObject>(recString);
                     try { obj.findMax(); } catch { print("couldnt find max"); }
-                    try { obj.normalizeArray();} catch { print("couldnt normalize"); }
-                   
-                }
-                if(obj != null)
-                {
+                    try { obj.normalizeArray(); } catch { print("couldnt normalize"); }
+
                     lock (data.mutex)
                     {
                         try { data.arr = obj.getArray(); } catch { print("couldnt get Array"); }
@@ -163,19 +137,24 @@ public class NetworkRetriever : MonoBehaviour
                         data.saver.addToHistory(obj.getArray());
                         data.messageString = recString;
                         data.newData = true;
-                        workDone = data.setDone;
-                    }
-                }else
-                {
-                    lock (data.mutex)
-                    {
-                        //try { data.arr = JsonBrainObject.zeroValue; } catch { print("couldnt get Array for zeroes"); }
-                        data.newData = false;
+
+                        //emotions
+                        data.emotion.fillAlphaBeta(data.arrRaw);
+                        data.emotion.update();
+
                         workDone = data.setDone;
                     }
                 }
+                catch
+                {
+                        lock (data.mutex)
+                        {
+                            data.newData = false;
+                            workDone = data.setDone;
+                        }
+                }
             }
-            print("shutting down socket!");
+            print("Shutting down socket!");
             server.Dispose();
             NetMQConfig.Cleanup();
         }

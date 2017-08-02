@@ -15,6 +15,6 @@ public class TowerCollider : MonoBehaviour {
 	}
 
     void OnTriggerEnter(Collider c) {
-        GetComponentInParent<MountainGenerator>().addMountain();
+        //GetComponentInParent<MountainGenerator>().addMountain();
     }
 }

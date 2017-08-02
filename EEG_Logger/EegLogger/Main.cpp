@@ -31,7 +31,6 @@ ofstream logfile("log.txt");
 // Prototypes
 BOOL finishDataRetrieval();
 BOOL saveDataToArray(int);
-void normalizeArray(float*);
 
 // ----------- MAIN -----------
 int main(int argc, char *argv[])
@@ -133,6 +132,7 @@ BOOL saveDataToArray(int nAcquisitionType)
 	sender.bind("tcp://*:5557");
 
 	// Array containing history of each node
+	#define NUM_OF_NODES 4
 	float graph[16][NUM_VALUES_FFT];
 	int graphCounter = 0;
 	kiss_fftr_cfg real_cfg;

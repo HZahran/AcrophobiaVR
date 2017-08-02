@@ -2,22 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FallingScript : MonoBehaviour {
+public class FallTrigger : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-
-    }
+		
+	}
 	
 	// Update is called once per frame
 	void Update () {
 		
 	}
 
-    public void fall()
+    void OnTriggerEnter(Collider c)
     {
-        GetComponent<Animator>().SetBool("fall", true);
-        transform.Rotate(-10, 0, 0);
-        transform.Translate(0, 0.8f, -1);
+        Debug.Log("Fell");
+        GameObject.Find("First Person Controller").GetComponent<MoveCam>().fallPlayer();
     }
 }

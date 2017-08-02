@@ -182,7 +182,7 @@ function Awake () {
 
 private function UpdateFunction () {
 
-    if (transform.position.y < GameObject.Find("Bridges").transform.position.y){
+    if (transform.position.y < GameObject.Find("End Point").transform.position.y){
         movement.gravity += 0.1;        
     }
 

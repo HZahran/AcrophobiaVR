@@ -6,47 +6,39 @@ public class MoveCam : MonoBehaviour {
 
     public float speed;
     public AudioClip fall;
-    private float checkPoints;
+    public Transform startPoint, endPoint;
     private float currDistance = 0;
     private float maxDistanceDelta;
     private bool hasFallen = false;
-    private const float MOUNTAINS_DISTANCE = 3050;
-
+    private bool reachedTarget = false;
+    private Transform targetPoint;
 
     // Use this for initialization
     void Start () {
-	}
-	
-	// Update is called once per frame
-	void Update () {
+        targetPoint = endPoint;
+        speed = 20;
+    }
 
-        if (currDistance < MOUNTAINS_DISTANCE)
+    // Update is called once per frame
+    void Update () {
+
+        float fear = GameManager.getFear();
+        fear = 1;
+        if (!reachedTarget)
         {
-            float rotX = 0;
-            //Debug.Log(rotX);
-            //speed = 20 * Mathf.Tan(rotX);
-            //Debug.Log(speed);
-            if (!isFallen())
+            if (!hasFallen)
             {
                 maxDistanceDelta = Time.deltaTime * speed;
-                transform.Rotate(0, 0, Mathf.Cos(Time.time * speed) / 15); // Running Effect
-            }
-            else if(!hasFallen)
-            {
-                GetComponentInChildren<FallingScript>().fall();
-                GetComponent<AudioSource>().clip = fall;
-                GetComponent<AudioSource>().loop = false;
-                GetComponent<AudioSource>().volume = 0.1f;
-                GetComponent<AudioSource>().Play();
-
-                maxDistanceDelta = 0;
-                hasFallen = true;
+                transform.Rotate(0, 0, Mathf.Cos(Time.time * speed) / 10); // Running Effect
+                speed *= fear;
             }
             
+            // Move Player
             transform.position = Vector3.MoveTowards(transform.position,
-                new Vector3(transform.position.x,
-                transform.position.y + 3050.0f * Mathf.Tan(rotX * -1),
-                transform.position.z + 3050.0f), maxDistanceDelta);
+                new Vector3(targetPoint.position.x, 
+                transform.position.y,
+                targetPoint.position.z)
+                , maxDistanceDelta);
             currDistance += maxDistanceDelta;
         }
         else
@@ -54,8 +46,24 @@ public class MoveCam : MonoBehaviour {
         
     }
 
-    private bool isFallen()
+    public void fallPlayer()
     {
-        return transform.position.y < GameObject.Find("Bridges").transform.position.y + 2;
+        // Falling Animation
+        Transform character = transform.GetChild(0);
+        character.gameObject.GetComponent<Animator>().SetBool("fall", true);
+        character.Rotate(15, 0, 0);
+        character.localPosition = new Vector3(0.3f, -2.3f, -0.1f);
+        character.Rotate(-40, 0, 0);
+
+        // Falling Sound
+        GetComponent<AudioSource>().clip = fall;
+        GetComponent<AudioSource>().loop = false;
+        GetComponent<AudioSource>().volume = 0.1f;
+        GetComponent<AudioSource>().Play();
+
+        // Stop Moving Forward
+        //maxDistanceDelta = 0;
+        hasFallen = true;
     }
+
 }

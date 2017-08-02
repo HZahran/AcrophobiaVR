@@ -10,14 +10,14 @@ namespace Assets
     class DataSaver
     {
         private string path = "";
-        private float historyLenght = 1000f;
+        private float historyLength = 1000f;
         ArrayList history = new ArrayList();
 
         public void addToHistory(float[][] obj)
         {
             lock (history)
             {
-                if (history.Count >= historyLenght)
+                if (history.Count >= historyLength)
                 {
                     history.RemoveAt(0);
                     history.Add(obj);
@@ -34,7 +34,7 @@ namespace Assets
             lock (history)
             {
                 ArrayList part;
-                int index = (int)((percentage) * historyLenght);
+                int index = (int)((percentage) * historyLength);
                 try {
                     part = history.GetRange(index, history.Count-index-1);
                 }
