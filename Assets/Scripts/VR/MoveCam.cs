@@ -16,23 +16,25 @@ public class MoveCam : MonoBehaviour {
     // Use this for initialization
     void Start () {
         targetPoint = endPoint;
-        speed = 20;
+        speed = 19;
     }
 
     // Update is called once per frame
     void Update () {
 
-        float fear = GameManager.getFear();
-        fear = 1;
+        float fear = GameManager.GetFear();
+        fear = 0.5f;
         if (!reachedTarget)
         {
             if (!hasFallen)
             {
                 maxDistanceDelta = Time.deltaTime * speed;
                 transform.Rotate(0, 0, Mathf.Cos(Time.time * speed) / 10); // Running Effect
-                speed *= fear;
+                speed = Mathf.Lerp(18, 23, fear); //
             }
-            
+            else
+                GetComponent<CharacterMotor>().movement.gravity += 4f; // Fall faster
+
             // Move Player
             transform.position = Vector3.MoveTowards(transform.position,
                 new Vector3(targetPoint.position.x, 
@@ -53,7 +55,7 @@ public class MoveCam : MonoBehaviour {
         character.gameObject.GetComponent<Animator>().SetBool("fall", true);
         character.Rotate(15, 0, 0);
         character.localPosition = new Vector3(0.3f, -2.3f, -0.1f);
-        character.Rotate(-40, 0, 0);
+        character.Rotate(-39, 0, 0);
 
         // Falling Sound
         GetComponent<AudioSource>().clip = fall;
@@ -62,8 +64,12 @@ public class MoveCam : MonoBehaviour {
         GetComponent<AudioSource>().Play();
 
         // Stop Moving Forward
-        //maxDistanceDelta = 0;
+        maxDistanceDelta = 0;
         hasFallen = true;
     }
 
+    public bool HasFallen()
+    {
+        return hasFallen;
+    }
 }

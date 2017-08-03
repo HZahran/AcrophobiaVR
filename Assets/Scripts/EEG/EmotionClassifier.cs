@@ -14,7 +14,7 @@ namespace Assets
         private float minArousal = 1000;
         private float minValence = 1000;
         private float fearLvl = 0;
-        public float fearPercentage = 0;
+        public float fearRatio = 0;
 
         public void fillAlphaBeta(float[][] arr) {
             for (int i = 0; i < 4; i++)
@@ -59,9 +59,9 @@ namespace Assets
         private void updateFear() // Arousal/ Valence
         {
             fearLvl = arousal / valence;
-            fearPercentage = fearLvl * 4 / 100;
+            fearRatio = fearLvl / 4;
             Debug.Log("Fear : " + fearLvl);
-            GameManager.updateFear(fearPercentage);
+            GameManager.UpdateFear(fearRatio);
         }
     }
 }
