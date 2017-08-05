@@ -10,7 +10,7 @@ public class BridgeGenerator1 : MonoBehaviour {
     public int holesFreq;
     private float initposZ;
     private float distanceY, distanceZ;
-    private float totalDis = 3050;
+    private float totalDisZ;
     private float scaleX = 1f;
     private bool enableCollider = false; // Enable Hole Collider
 
@@ -18,16 +18,25 @@ public class BridgeGenerator1 : MonoBehaviour {
     void Start () {
         initposZ = fps.position.z;
 
-        //Instantiate first 5 bridges
+        totalDisZ = GameObject.Find("End Point").transform.position.z - initposZ;
+
+        //Instantiate first 5 bridges without holes
         for (int i = 0; i < 5; i++)
             addBridge(false);
+
+        //Rest are randomly generated
+        while(distanceZ < totalDisZ - 45)
+            addBridge(Math.Min(1, UnityEngine.Random.Range(0, holesFreq)) == 1); // Increase probability of holes
+
+        // Set Target after the bridges
+        GameObject.Find("End Point").transform.localPosition = new Vector3(0, distanceY, distanceZ);
     }
 
     // Update is called once per frame
     void Update () {
 
-        if ((fps.position.z - initposZ > distanceZ / 2) && (distanceZ < totalDis))
-            addBridge(Math.Min(1, UnityEngine.Random.Range(0, holesFreq)) == 1); // Increase probability of holes
+        //if ((fps.position.z - initposZ > distanceZ / 2) && (distanceZ < totalDisZ - 45)) // -45 not to create last bridge
+        //    addBridge(Math.Min(1, UnityEngine.Random.Range(0, holesFreq)) == 1); // Increase probability of holes
     }
 
     private void addBridge(bool withHole){
@@ -51,4 +60,5 @@ public class BridgeGenerator1 : MonoBehaviour {
         if (withHole)
             enableCollider = true;
     }
+
 }

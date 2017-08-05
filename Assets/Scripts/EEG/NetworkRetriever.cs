@@ -17,7 +17,6 @@ struct threadDataStruct
     public bool setDone;
     public object mutex;
     public DataSaver saver;
-    public EmotionClassifier emotion;
     public bool newData;
 }
 
@@ -48,16 +47,15 @@ public class NetworkRetriever : MonoBehaviour
         threadData.mutex = this.mutex;
         threadData.newData = false;
         threadData.saver = new DataSaver();
-        threadData.emotion = new EmotionClassifier();
         serverThread = new Thread(lambdaFunc => threadWorker(ref threadData));
         serverThread.Start();
-       //StartCoroutine("coroutineUpdateValues"); use instead of update block
+        StartCoroutine("coroutineUpdateValues"); //use instead of update block
     }
 
     // Update is called once per frame
     void Update()
     {
-        bool newData = false;
+        /*bool newData = false;
         //-----------------------------------------------------
         //remove and use coroutine for performance increase!
         if (this.history.Count == 0)
@@ -90,14 +88,8 @@ public class NetworkRetriever : MonoBehaviour
             history.Remove(0);
 
         }
-        //-----------------------------------------------------
+        //-----------------------------------------------------*/
     }
-
-    private void FixedUpdate()
-    {
-
-    }
-
 
     private void threadWorker(ref threadDataStruct data)
     {
@@ -127,8 +119,6 @@ public class NetworkRetriever : MonoBehaviour
                 {
                     server.TryReceiveFrameString(timeOut, out recString);
                     obj = JsonConvert.DeserializeObject<JsonBrainObject>(recString);
-                    try { obj.findMax(); } catch { print("couldnt find max"); }
-                    try { obj.normalizeArray(); } catch { print("couldnt normalize"); }
 
                     lock (data.mutex)
                     {
@@ -139,8 +129,8 @@ public class NetworkRetriever : MonoBehaviour
                         data.newData = true;
 
                         //emotions
-                        data.emotion.fillAlphaBeta(data.arrRaw);
-                        data.emotion.update();
+                        EmotionClassifier.fillAlphaBeta(data.arrRaw);
+                        EmotionClassifier.update();
 
                         workDone = data.setDone;
                     }
@@ -160,6 +150,25 @@ public class NetworkRetriever : MonoBehaviour
         }
     }
 
+    private IEnumerator coroutineUpdateValues()
+    {
+        float[][] arr;
+        float[][] rawArr;
+        while (enabled)
+        {
+            lock (threadData.mutex)
+            {
+                arr = threadData.arr;
+                rawArr = threadData.arrRaw;
+            }
+            //emotions
+             EmotionClassifier.fillAlphaBeta(rawArr);
+             EmotionClassifier.update();
+             yield return null;
+                
+            }
+
+    }
     void OnApplicationQuit()
     {
         lock (threadData.mutex)

@@ -5,7 +5,7 @@ using UnityEngine;
 public class MoveCam : MonoBehaviour {
 
     public float speed;
-    public AudioClip fall;
+    public AudioClip runClip, fallClip;
     public Transform startPoint, endPoint;
     private float currDistance = 0;
     private float maxDistanceDelta;
@@ -16,35 +16,58 @@ public class MoveCam : MonoBehaviour {
     // Use this for initialization
     void Start () {
         targetPoint = endPoint;
-        speed = 19;
+        GetComponent<AudioSource>().clip = runClip;
+       // speed = 19;
     }
 
     // Update is called once per frame
     void Update () {
 
-        float fear = GameManager.GetFear();
-        fear = 0.5f;
-        if (!reachedTarget)
+        if (GameManager.GameEnded())
         {
-            if (!hasFallen)
-            {
-                maxDistanceDelta = Time.deltaTime * speed;
-                transform.Rotate(0, 0, Mathf.Cos(Time.time * speed) / 10); // Running Effect
-                speed = Mathf.Lerp(18, 23, fear); //
-            }
-            else
-                GetComponent<CharacterMotor>().movement.gravity += 4f; // Fall faster
+            hasFallen = false;
+            GetComponent<CharacterMotor>().movement.gravity = 50f;
+            Transform character = transform.GetChild(0);
+            character.gameObject.GetComponent<Animator>().SetBool("fall", false);
 
-            // Move Player
-            transform.position = Vector3.MoveTowards(transform.position,
-                new Vector3(targetPoint.position.x, 
-                transform.position.y,
-                targetPoint.position.z)
-                , maxDistanceDelta);
-            currDistance += maxDistanceDelta;
         }
-        else
-            currDistance = 0;
+
+        if (GameManager.GameStarted()) {
+
+            // Running Sound
+            if (GetComponent<AudioSource>().clip == null) {
+                GetComponent<AudioSource>().clip = runClip;
+                GetComponent<AudioSource>().loop = true;
+                GetComponent<AudioSource>().volume = 0.5f;
+                GetComponent<AudioSource>().Play();
+            }
+
+            float fear = GameManager.GetFear();
+            fear = 0f;
+            if (!reachedTarget)
+            {
+                if (!hasFallen)
+                {
+                    maxDistanceDelta = Time.deltaTime * speed;
+                    transform.Rotate(0, 0, Mathf.Cos(Time.time * speed) / 10); // Running Effect
+                    speed = Mathf.Lerp(22, 26, fear); //Normal to Max Speed 
+                }
+                else
+                    GetComponent<CharacterMotor>().movement.gravity += 4f; // Fall faster
+
+                // Move Player
+                transform.position = Vector3.MoveTowards(transform.position,
+                    new Vector3(targetPoint.position.x,
+                    transform.position.y,
+                    targetPoint.position.z)
+                    , maxDistanceDelta);
+                currDistance += maxDistanceDelta;
+            }
+
+            // Surpassed the target
+            if (currDistance > endPoint.position.z - startPoint.position.z)
+                fallPlayer();
+        }
         
     }
 
@@ -58,13 +81,14 @@ public class MoveCam : MonoBehaviour {
         character.Rotate(-39, 0, 0);
 
         // Falling Sound
-        GetComponent<AudioSource>().clip = fall;
+        GetComponent<AudioSource>().clip = fallClip;
         GetComponent<AudioSource>().loop = false;
-        GetComponent<AudioSource>().volume = 0.1f;
+        GetComponent<AudioSource>().volume = 0.05f;
         GetComponent<AudioSource>().Play();
 
         // Stop Moving Forward
         maxDistanceDelta = 0;
+        currDistance = 0;
         hasFallen = true;
     }
 

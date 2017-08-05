@@ -6,43 +6,44 @@ namespace Assets
 {
     public class EmotionClassifier
     {
-        private float[][] alphaBeta = new float[4][]; // First 4 pairs of alpha,beta
-        private float arousal = 0;
-        private float valence = 0;
-        private float maxArousal = 0;
-        private float maxValence = 0;
-        private float minArousal = 1000;
-        private float minValence = 1000;
-        private float fearLvl = 0;
-        public float fearRatio = 0;
+        private static float[][] alphaBeta = new float[4][]; // First 4 pairs of alpha,beta
+        private static float arousal = 0;
+        private static float valence = 0;
+        private static float maxArousal = 0;
+        private static float maxValence = 0;
+        private static float minArousal = 1000;
+        private static float minValence = 1000;
+        private static float fearLvl = 0;
+        public static float fearRatio = 0;
 
-        public void fillAlphaBeta(float[][] arr) {
+        public static void fillAlphaBeta(float[][] arr) {
             for (int i = 0; i < 4; i++)
                 alphaBeta[i] = new float[2]{arr[i][0], arr[i][1]};
         }
 
-        public void update()
+        public static void update()
         {
             updateArousal();
             updateValence();
             updateFear();
         }
 
-        private void updateArousal() // Prefrontal nodes alpha/beta
+        private static void updateArousal() // Prefrontal nodes alpha/beta
         {
-            float Fp1 = alphaBeta[0][0] / alphaBeta[0][1];
-            float Fp2 = alphaBeta[1][0] / alphaBeta[1][1];
+            float Fp1 = alphaBeta[0][1] / alphaBeta[0][0];
+            float Fp2 = alphaBeta[1][1] / alphaBeta[1][0];
 
             float avg = (Fp1 + Fp2) / 2;
             if (avg < 4 && avg > 0)
                arousal = avg; // 0 -> 4
+
             maxArousal = Mathf.Max(arousal, maxArousal);
             minArousal = Mathf.Min(arousal, minArousal);
             Debug.Log("Arousal : " + arousal + ", Min : " + minArousal + ", Max : " + maxArousal);
 
         }
 
-        private void updateValence() // Temporal nodes alpha
+        private static void updateValence() // Temporal nodes alpha
         {
             int margin = 2; // Valence margin
             float F3 = alphaBeta[2][0];
@@ -56,12 +57,11 @@ namespace Assets
             Debug.Log("Valence : " + valence + ", Min : " + minValence + ", Max : " + maxValence);
         }
 
-        private void updateFear() // Arousal/ Valence
+        private static void updateFear() // Arousal/ Valence
         {
             fearLvl = arousal / valence;
-            fearRatio = fearLvl / 4;
             Debug.Log("Fear : " + fearLvl);
-            GameManager.UpdateFear(fearRatio);
+            GameManager.UpdateFear(fearLvl);
         }
     }
 }

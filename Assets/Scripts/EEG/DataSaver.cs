@@ -18,14 +18,8 @@ namespace Assets
             lock (history)
             {
                 if (history.Count >= historyLength)
-                {
                     history.RemoveAt(0);
-                    history.Add(obj);
-                }
-                else
-                {
-                    history.Add(obj);
-                }
+                history.Add(obj);
             }
         }
 
