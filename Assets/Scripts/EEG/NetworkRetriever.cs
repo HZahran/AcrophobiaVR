@@ -178,19 +178,6 @@ public class NetworkRetriever : MonoBehaviour
         serverThread.Join();
     }
 
-    float findMax(float[] arr, float max)
-    {
-        float maxVal = max;
-        foreach(float value in arr)
-        {
-            if(Mathf.Abs(value) > maxVal)
-            {
-                maxVal = value;
-            }
-        }
-        return maxVal;
-    }
-
     public void playHistoryFrom(float percentage)
     {
         this.history = threadData.saver.getHistoryFrom(percentage);

@@ -7,7 +7,7 @@ public class BridgeGenerator1 : MonoBehaviour {
 
     public Transform bridge;
     public Transform fps;
-    public int holesFreq;
+    public float holesFreq = 1f;
     private float initposZ;
     private float distanceY, distanceZ;
     private float totalDisZ;
@@ -25,18 +25,18 @@ public class BridgeGenerator1 : MonoBehaviour {
             addBridge(false);
 
         //Rest are randomly generated
-        while(distanceZ < totalDisZ - 45)
-            addBridge(Math.Min(1, UnityEngine.Random.Range(0, holesFreq)) == 1); // Increase probability of holes
-
+        while (distanceZ < totalDisZ - 45)
+        {
+            addBridge(Math.Min(1, UnityEngine.Random.Range(0, holesFreq)) == 1);
+            if (holesFreq < 2.5f) holesFreq += 0.1f;
+        }
         // Set Target after the bridges
         GameObject.Find("End Point").transform.localPosition = new Vector3(0, distanceY, distanceZ);
     }
 
     // Update is called once per frame
     void Update () {
-
-        //if ((fps.position.z - initposZ > distanceZ / 2) && (distanceZ < totalDisZ - 45)) // -45 not to create last bridge
-        //    addBridge(Math.Min(1, UnityEngine.Random.Range(0, holesFreq)) == 1); // Increase probability of holes
+        
     }
 
     private void addBridge(bool withHole){

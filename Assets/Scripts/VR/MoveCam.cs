@@ -12,12 +12,17 @@ public class MoveCam : MonoBehaviour {
     private bool hasFallen = false;
     private bool reachedTarget = false;
     private Transform targetPoint;
+    private Transform cart;
+    private Quaternion initCartRot;
 
     // Use this for initialization
     void Start () {
         targetPoint = endPoint;
-        GetComponent<AudioSource>().clip = runClip;
-       // speed = 19;
+        GetComponent<AudioSource>().clip = null;
+        //Move Cart Forward
+        cart = transform.GetChild(0).transform;
+        initCartRot = cart.localRotation;
+        // speed = 19;
     }
 
     // Update is called once per frame
@@ -27,8 +32,9 @@ public class MoveCam : MonoBehaviour {
         {
             hasFallen = false;
             GetComponent<CharacterMotor>().movement.gravity = 50f;
-            Transform character = transform.GetChild(0);
-            character.gameObject.GetComponent<Animator>().SetBool("fall", false);
+            cart.localRotation = initCartRot;
+            //Transform character = transform.GetChild(0);
+            //character.gameObject.GetComponent<Animator>().SetBool("fall", false);
 
         }
 
@@ -38,22 +44,24 @@ public class MoveCam : MonoBehaviour {
             if (GetComponent<AudioSource>().clip == null) {
                 GetComponent<AudioSource>().clip = runClip;
                 GetComponent<AudioSource>().loop = true;
-                GetComponent<AudioSource>().volume = 0.5f;
+                GetComponent<AudioSource>().volume = 0.2f;
                 GetComponent<AudioSource>().Play();
             }
 
-            float fear = GameManager.GetFear();
-            fear = 0f;
+            float fear = Mathf.Max(0, 1 - GameManager.GetFear());
             if (!reachedTarget)
             {
                 if (!hasFallen)
                 {
                     maxDistanceDelta = Time.deltaTime * speed;
                     transform.Rotate(0, 0, Mathf.Cos(Time.time * speed) / 10); // Running Effect
-                    speed = Mathf.Lerp(22, 26, fear); //Normal to Max Speed 
+                    speed = Mathf.Lerp(17, 20, fear); //Speed decreases with increasing fear
                 }
                 else
+                {
+                    cart.transform.Rotate(Time.deltaTime * 50, 0, 0); // Rotate Cart while falling
                     GetComponent<CharacterMotor>().movement.gravity += 4f; // Fall faster
+                }
 
                 // Move Player
                 transform.position = Vector3.MoveTowards(transform.position,
@@ -73,23 +81,18 @@ public class MoveCam : MonoBehaviour {
 
     public void fallPlayer()
     {
-        // Falling Animation
-        Transform character = transform.GetChild(0);
-        character.gameObject.GetComponent<Animator>().SetBool("fall", true);
-        character.Rotate(15, 0, 0);
-        character.localPosition = new Vector3(0.3f, -2.3f, -0.1f);
-        character.Rotate(-39, 0, 0);
-
         // Falling Sound
         GetComponent<AudioSource>().clip = fallClip;
         GetComponent<AudioSource>().loop = false;
         GetComponent<AudioSource>().volume = 0.05f;
         GetComponent<AudioSource>().Play();
 
+
         // Stop Moving Forward
         maxDistanceDelta = 0;
         currDistance = 0;
         hasFallen = true;
+
     }
 
     public bool HasFallen()

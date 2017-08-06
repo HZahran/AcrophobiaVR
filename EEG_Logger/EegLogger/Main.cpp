@@ -310,7 +310,7 @@ BOOL saveDataToArray(int nAcquisitionType)
 					std::memcpy(message.data(), valuesJson, strlen(valuesJson));
 					sender.send(message);
 
-					//Sleep(250);
+					Sleep(250);
 				}
 			}
 		}
