@@ -3,6 +3,7 @@ using System.Text;
 
 public class Tests {
 
+    private float idle; // Testing Idle Case
     private float head; // Testing Head Movement Artifact
     private float press; // Testing Finger Press Artifact
     private float sound; // Testing change in sound
@@ -11,13 +12,30 @@ public class Tests {
     private float maxFear; // Keeping track of max lvl of fear
 
     // Tests Time
+    public float idleTime = 5;
     public float headTime = 5; 
     public float pressTime = 2; 
     public float soundTime = 5; 
     public float fallTime = 5; 
     public float visualTime = 5;
 
-    private string[] CSV_COLS = new string[] {"Head Movement", "Pressing", "Sound", "Falling","Visuals","Max Fear"};
+    private string[] CSV_COLS = new string[] {"Idle", "Head Movement", "Pressing", "Sound", "Falling","Visuals","Max Fear", "Won"};
+    private string filePath = @"Results/Tests.csv";
+    private string delimiter = ",";
+
+    public Tests(){
+        if (!File.Exists(filePath))
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(string.Join(delimiter, CSV_COLS)); // Add Col Names
+            File.WriteAllText(filePath, sb.ToString()); // Create New File
+        }
+    }
+    public float IdleTest
+    {
+        get { return idle; }
+        set { idle = value; }
+    }
 
     public float HeadTest
     {
@@ -51,25 +69,21 @@ public class Tests {
         set { maxFear = value; }
     }
 
-    public void SaveData()
+    public void SaveData(bool gameWon)
     {
-        string filePath = @"/Tests.csv";
-        string delimiter = ",";
-
         // Insert new row
-        string[] output = new string []{ HeadTest.ToString(),
-                                         PressTest.ToString(),
-                                         SoundTest.ToString(),
-                                         FallingTest.ToString(),
-                                         VisualTest.ToString(),                                         HeadTest.ToString(),
-                                         MaxFear.ToString()};
+        string[] output = new string []{ IdleTest.ToString(),
+                                         HeadTest.ToString() + "%",
+                                         PressTest.ToString() + "%",
+                                         SoundTest.ToString() + "%",
+                                         FallingTest.ToString() + "%",
+                                         VisualTest.ToString() + "%",
+                                         MaxFear.ToString() + "%",
+                                         gameWon.ToString()};
 
         StringBuilder sb = new StringBuilder();
-
-        if (!File.Exists(filePath))
-            sb.AppendLine(string.Join(delimiter, CSV_COLS)); // Add Col Names
-
         sb.AppendLine(string.Join(delimiter, output)); // Add New Recording
+
         File.AppendAllText(filePath, sb.ToString()); // Save To File
     }
 }

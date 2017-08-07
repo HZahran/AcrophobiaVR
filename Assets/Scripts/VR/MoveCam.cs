@@ -12,17 +12,13 @@ public class MoveCam : MonoBehaviour {
     private bool hasFallen = false;
     private bool reachedTarget = false;
     private Transform targetPoint;
-    private Transform cart;
-    private Quaternion initCartRot;
+    private Quaternion initRot;
 
     // Use this for initialization
     void Start () {
         targetPoint = endPoint;
         GetComponent<AudioSource>().clip = null;
         //Move Cart Forward
-        cart = transform.GetChild(0).transform;
-        initCartRot = cart.localRotation;
-        // speed = 19;
     }
 
     // Update is called once per frame
@@ -32,7 +28,7 @@ public class MoveCam : MonoBehaviour {
         {
             hasFallen = false;
             GetComponent<CharacterMotor>().movement.gravity = 50f;
-            cart.localRotation = initCartRot;
+            transform.localRotation = initRot;
             //Transform character = transform.GetChild(0);
             //character.gameObject.GetComponent<Animator>().SetBool("fall", false);
 
@@ -59,7 +55,7 @@ public class MoveCam : MonoBehaviour {
                 }
                 else
                 {
-                    cart.transform.Rotate(Time.deltaTime * 50, 0, 0); // Rotate Cart while falling
+                    transform.Rotate(Time.deltaTime * 20, 0, 0); // Rotate Cart while falling
                     GetComponent<CharacterMotor>().movement.gravity += 4f; // Fall faster
                 }
 

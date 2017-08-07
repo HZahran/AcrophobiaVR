@@ -12,7 +12,10 @@ public class GameManager : MonoBehaviour {
     private static bool gameEnded, gameStarted;
     private static int gameStartTime = 0; // Curr Game Start Time
     private static int currTime = 0; // Curr Game Time
-    private static float fearPerc = 100;
+    private static float fearPerc = 0;
+    private static float idleLvl = 0;
+    private static bool gameWon = false;
+    private static bool gameSaved = false;
 
     // Player Screen
     public Transform fps;
@@ -29,7 +32,7 @@ public class GameManager : MonoBehaviour {
     // Initial State
     private Vector3 initPos;
     private Quaternion initRot;
-    private static float timerIntro = 10; // Intro takes 10s
+    private static float timerIntro = 15; // Intro takes 10s
 
     // Tests
     private Tests tests;
@@ -51,11 +54,12 @@ public class GameManager : MonoBehaviour {
 
         //Sets this to not be destroyed when reloading scene
         DontDestroyOnLoad(gameObject);
+
+        tests = new Tests();
     }
 
     // Use this for initialization
     void Start () {
-        tests = new Tests();
         time = transform.GetChild(1).GetComponent<TextMesh>();
         fear = transform.GetChild(2).GetComponent<TextMesh>();
         gm.screenText = gm.canvas.GetChild(0).GetComponent<TextMesh>();
@@ -71,12 +75,19 @@ public class GameManager : MonoBehaviour {
         // Intro or Restart time
         if (timerIntro > 0)
         {
+            // Idle Test
+            if ((tests.idleTime -= Time.deltaTime) > 0)
+            {
+                tests.IdleTest = idleLvl;
+            }
+            else Assets.EmotionClassifier.isIdleRead = false;
+
             // Head Mov. Test
-            if((tests.headTime -= Time.deltaTime) > 0)
+            if (timerIntro <= 10 && (tests.headTime -= Time.deltaTime) > 0)
                  tests.HeadTest = Mathf.Max(tests.HeadTest, fearPerc);
             
             // Sound Test
-            if(timerIntro <= tests.soundTime)
+            if(timerIntro <= 5)
             {
                 if (!transform.GetChild(0).GetComponent<AudioSource>().isPlaying) // Play Wind Sound
                     transform.GetChild(0).GetComponent<AudioSource>().Play();
@@ -87,7 +98,7 @@ public class GameManager : MonoBehaviour {
 
             // Start or Restart Text
             if (timerIntro <= 10)
-                gm.screenText.text = (gameEnded ? "Game Restarts in " : "Explore The World Around You\nGame Starts in ") + (int)timerIntro + "s";
+                gm.screenText.text = (gameEnded ? "Game Restarts in " : "Explore The World Around You\nPress Trigger To Jump\nGame Starts in ") + (int)timerIntro + "s";
 
             timerIntro -= Time.deltaTime;
         }
@@ -101,19 +112,45 @@ public class GameManager : MonoBehaviour {
         {
             currTime = ((int)Time.time) - gameStartTime;
             time.text = "Time " + currTime + "s";
-            fear.text = "Fear " + (int)(fearPerc * 100 )+ "%";
+            fear.text = "Fear " + Mathf.Max(0, Mathf.Min(200, (int)fearPerc)) + "%";
+
+            // General Max Fear
+            tests.MaxFear = Mathf.Max(tests.MaxFear, fearPerc);
+
+            if (fps.GetComponent<FPSInputController>().isTriggerPressed)
+            {
+                //Press Test
+                if ((tests.pressTime -= Time.deltaTime) > 0)
+                    tests.PressTest = Mathf.Max(tests.PressTest, fearPerc);
+            }
+
+            if (fps.GetComponent<MoveCam>().HasFallen())
+            {
+                // Falling Test
+                if ((tests.fallTime -= Time.deltaTime) > 0)
+                    tests.FallingTest = Mathf.Max(tests.FallingTest, fearPerc);
+            }
         }
 
         if (gameEnded) {
             // Visuals Test
-            if((tests.visualTime -= Time.deltaTime) > 0)
+            if ((tests.visualTime -= Time.deltaTime) > 0)
                 tests.VisualTest = Mathf.Max(tests.VisualTest, fearPerc);
+            else if (!gameSaved)
+            {
+                tests.SaveData(gameWon); // Finished Tests & Save
+                gameSaved = true;
+            }
         }
     }
 
     public static void UpdateFear(float fearPercentage)
     {
         fearPerc = fearPercentage;
+    }
+    public static void UpdateIdle(float idle)
+    {
+        idleLvl = idle;
     }
     public static float GetFear()
     {
@@ -158,9 +195,10 @@ public class GameManager : MonoBehaviour {
         changeVisibility(false);
         RenderSettings.skybox = gm.noSkybox;
 
+        gameWon = wonGame;
         // Show Final Time
         gm.screenText.text = (wonGame? "You Did It !!":"Game over") + "\nTime : " + currTime +"s";
-        timerIntro = 13; // 3 Seconds showing the score
+        timerIntro = 15; // 5 Seconds showing the score
         gm.fps.transform.GetChild(0).GetComponent<Animator>().SetBool("game end", true);
         gm.fps.transform.GetChild(0).GetComponent<Animator>().SetBool("game start", false);
 
@@ -175,6 +213,7 @@ public class GameManager : MonoBehaviour {
         gm.fps.position = gm.initPos;
         gm.fps.rotation = gm.initRot;
 
+        gameWon = false;
         RenderSettings.skybox = gm.skybox;
         currTime = 0;
     }

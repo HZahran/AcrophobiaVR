@@ -28,10 +28,11 @@ public class BridgeGenerator1 : MonoBehaviour {
         while (distanceZ < totalDisZ - 45)
         {
             addBridge(Math.Min(1, UnityEngine.Random.Range(0, holesFreq)) == 1);
-            if (holesFreq < 2.5f) holesFreq += 0.1f;
+            if (holesFreq < 2.5f) holesFreq += 0.1f; //Increasing freq. of holes
         }
+
         // Set Target after the bridges
-        GameObject.Find("End Point").transform.localPosition = new Vector3(0, distanceY, distanceZ);
+        GameObject.Find("End Point").transform.localPosition = new Vector3(0, distanceY, distanceZ - 495); // -495 z of parent
     }
 
     // Update is called once per frame

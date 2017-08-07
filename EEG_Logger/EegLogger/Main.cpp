@@ -71,6 +71,7 @@ BOOL saveDataToArray(int nAcquisitionType)
 	// (1) Open device
 	if (S_OK != l_pDevice->Open())
 		finishDataRetrieval();
+
 	// (2) Setup configuration
 	nMaxChannels = l_pDevice->GetChannels();
 	nAnalogChannels = l_pDevice->GetAnalogChannels();
@@ -182,7 +183,8 @@ BOOL saveDataToArray(int nAcquisitionType)
 				float *pBuffer = (float *)saData.m_psa->pvData;
 				l_GenericData.WriteData(pBuffer, nPoints, nMaxChannels - 1, 1); // ignore trigger channel
 
-																				// Create history of incoming data for each node
+				// Create history of incoming data for each node
+
 				if (graphCounter < NUM_VALUES_FFT)
 				{
 					for (int i = 0; i < 16; i++)
@@ -195,6 +197,12 @@ BOOL saveDataToArray(int nAcquisitionType)
 				}
 				else
 				{
+					// For Emotions Classification
+					for (int j = 0; j < NUM_VALUES_FFT; j++) {
+						graph[0][j] = (graph[0][j] + graph[1][j]) / 2.0f; // Node 1 = Fpz = avg(fp1, fp2)
+						graph[2][j] -= graph[3][j]; // Node 3 = F3 - F4 Signal
+					}
+
 					graphCounter = 0;
 					/*
 					Step 2: Fourier Transformation -------------------------------------------------------------------------------------
@@ -219,7 +227,10 @@ BOOL saveDataToArray(int nAcquisitionType)
 								transformedArray[i][j] = 0.0;
 							}
 						}
+					}
 
+					//Iterate through all 16 nodes and transform each graph (value history)
+					for (int i = 0; i < 16; i++) {
 						/*
 						Step 3: Filter highest amplitude of alpha, beta and gamma waves
 						Alpha:  8-13Hz
@@ -244,24 +255,7 @@ BOOL saveDataToArray(int nAcquisitionType)
 							if (gammaMax[i] < transformedArray[i][j])
 								gammaMax[i] = transformedArray[i][j];
 						}
-
-						// Print max values
-						/*cout << alphaMax << " ";
-						cout << betaMax << " ";
-						cout << gammaMax << " ";
-						cout << "\n";
-						*/
-
-						/*						// Normalize transformed graph
-						//normalizeArray(transformedArray[i]);
-						for (int j = 0; j < NUM_VALUES_FFT; j++)
-						{
-						cout << transformedArray[i][j] << " ";
-						}
-						*/
 					}
-					//cout << "\n";
-
 					/*
 					Step 4: JSON -------------------------------------------------------------------------------------------------------
 					Save measured data to JSON file

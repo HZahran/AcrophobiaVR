@@ -129,7 +129,7 @@ public class NetworkRetriever : MonoBehaviour
                         data.newData = true;
 
                         //emotions
-                        EmotionClassifier.fillAlphaBeta(data.arrRaw);
+                        EmotionClassifier.fillAlphaBeta(data.arr);
                         EmotionClassifier.update();
 
                         workDone = data.setDone;
@@ -161,12 +161,8 @@ public class NetworkRetriever : MonoBehaviour
                 arr = threadData.arr;
                 rawArr = threadData.arrRaw;
             }
-            //emotions
-             EmotionClassifier.fillAlphaBeta(rawArr);
-             EmotionClassifier.update();
-             yield return null;
-                
-            }
+            yield return null;
+        }
 
     }
     void OnApplicationQuit()
