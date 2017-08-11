@@ -19,7 +19,7 @@ public class Tests {
     public float fallTime = 5; 
     public float visualTime = 5;
 
-    private string[] CSV_COLS = new string[] {"Idle", "Head Movement", "Pressing", "Sound", "Falling","Visuals","Max Fear", "Won"};
+    private string[] CSV_COLS = new string[] {"Idle", "Head Movement", "Pressing", "Sound", "Falling","Visuals","Max Fear", "Won", "Time"};
     private string filePath = @"Results/Tests.csv";
     private string delimiter = ",";
 
@@ -69,7 +69,7 @@ public class Tests {
         set { maxFear = value; }
     }
 
-    public void SaveData(bool gameWon)
+    public void SaveData(bool gameWon, float time)
     {
         // Insert new row
         string[] output = new string []{ IdleTest.ToString(),
@@ -79,7 +79,8 @@ public class Tests {
                                          FallingTest.ToString() + "%",
                                          VisualTest.ToString() + "%",
                                          MaxFear.ToString() + "%",
-                                         gameWon.ToString()};
+                                         gameWon.ToString(),
+                                         time.ToString()};
 
         StringBuilder sb = new StringBuilder();
         sb.AppendLine(string.Join(delimiter, output)); // Add New Recording

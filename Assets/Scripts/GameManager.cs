@@ -15,6 +15,7 @@ public class GameManager : MonoBehaviour {
     private static float fearPerc = 0;
     private static float idleLvl = 0;
     private static bool gameWon = false;
+    private static float timeFinished = 0;
     private static bool gameSaved = false;
 
     // Player Screen
@@ -138,7 +139,7 @@ public class GameManager : MonoBehaviour {
                 tests.VisualTest = Mathf.Max(tests.VisualTest, fearPerc);
             else if (!gameSaved)
             {
-                tests.SaveData(gameWon); // Finished Tests & Save
+                tests.SaveData(gameWon, timeFinished); // Finished Tests & Save
                 gameSaved = true;
             }
         }
@@ -182,8 +183,8 @@ public class GameManager : MonoBehaviour {
         gm.canvas.gameObject.SetActive(false);
         gameStartTime = (int)Time.time;
         // Start 
-        gm.fps.transform.GetChild(0).GetComponent<Animator>().SetBool("game end", false);
-        gm.fps.transform.GetChild(0).GetComponent<Animator>().SetBool("game start", true);
+        //gm.fps.transform.GetChild(0).GetComponent<Animator>().SetBool("game end", false);
+        //gm.fps.transform.GetChild(0).GetComponent<Animator>().SetBool("game start", true);
         gm.fps.GetComponent<AudioSource>().Play();
     }
 
@@ -197,7 +198,8 @@ public class GameManager : MonoBehaviour {
 
         gameWon = wonGame;
         // Show Final Time
-        gm.screenText.text = (wonGame? "You Did It !!":"Game over") + "\nTime : " + currTime +"s";
+        timeFinished = currTime;
+        gm.screenText.text = (wonGame? ("You Did It In\nTime : " + timeFinished + "s"): "Game over") ;
         timerIntro = 15; // 5 Seconds showing the score
         gm.fps.transform.GetChild(0).GetComponent<Animator>().SetBool("game end", true);
         gm.fps.transform.GetChild(0).GetComponent<Animator>().SetBool("game start", false);

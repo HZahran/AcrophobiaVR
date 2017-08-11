@@ -12,7 +12,6 @@ public class MoveCam : MonoBehaviour {
     private bool hasFallen = false;
     private bool reachedTarget = false;
     private Transform targetPoint;
-    private Quaternion initRot;
 
     // Use this for initialization
     void Start () {
@@ -27,11 +26,7 @@ public class MoveCam : MonoBehaviour {
         if (GameManager.GameEnded())
         {
             hasFallen = false;
-            GetComponent<CharacterMotor>().movement.gravity = 50f;
-            transform.localRotation = initRot;
-            //Transform character = transform.GetChild(0);
-            //character.gameObject.GetComponent<Animator>().SetBool("fall", false);
-
+            GetComponent<CharacterMotor>().movement.gravity = 20f;
         }
 
         if (GameManager.GameStarted()) {
@@ -56,7 +51,7 @@ public class MoveCam : MonoBehaviour {
                 else
                 {
                     transform.Rotate(Time.deltaTime * 20, 0, 0); // Rotate Cart while falling
-                    GetComponent<CharacterMotor>().movement.gravity += 4f; // Fall faster
+                    GetComponent<CharacterMotor>().movement.gravity += 5f; // Fall faster
                 }
 
                 // Move Player
@@ -69,7 +64,7 @@ public class MoveCam : MonoBehaviour {
             }
 
             // Surpassed the target
-            if (currDistance > endPoint.position.z - startPoint.position.z)
+            if (!hasFallen && currDistance > endPoint.position.z - startPoint.position.z)
                 fallPlayer();
         }
         
@@ -84,8 +79,10 @@ public class MoveCam : MonoBehaviour {
         GetComponent<AudioSource>().Play();
 
 
+        //Reset
+        //GetComponent<AudioSource>().clip = null;
         // Stop Moving Forward
-        maxDistanceDelta = 0;
+        // maxDistanceDelta = 0;
         currDistance = 0;
         hasFallen = true;
 
